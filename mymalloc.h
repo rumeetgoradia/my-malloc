@@ -6,10 +6,10 @@
 void* mymalloc(size_t req, char* file, size_t line);
 void myfree(void* addr, char* file, size_t line);
 
-static char myblock[4096];
+static unsigned char myblock[4096];
 
-typedef struct metadata {
-	size_t in_use;
-	size_t size;
-	struct metadata * next;
-} metadata;
+/*typedef struct metadata {
+*	size_t in_use;
+*	size_t size;
+*	struct metadata * next;
+} metadata; */
