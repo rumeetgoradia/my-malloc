@@ -7,7 +7,7 @@
 size_t calc (unsigned char first, unsigned char second) {
 	return (second << 8) + first;	 
 }
-
+/*
 void update_magic (int index, size_t difference) {
 	size_t size = calc(myblock[index-2], [index-1]);
 	int i = index + calc_size;
@@ -22,32 +22,32 @@ void update_magic (int index, size_t difference) {
 			return;
 		}
 	}
-}
+} */
 
-void split (int index, size_t size, size_t available, size_t prev_magic) {
-	size_t adjusted_magic = prev_magic + 5 + size;
-	size_t remaining_size = available - (adjusted_magic - prev_magic);
+void split (int index, size_t size, size_t available) {
+//	size_t adjusted_magic = prev_magic + 5 + size;
+	size_t remaining_size = available - (3 + size);
 	if (index + size < 4091) {
-		update_magic(index, adjusted_magic - prev_magic, 1);
-		myblock[index + size + 1] = (unsigned char) adjusted_magic;
-		adjusted_magic = adjusted_magic >> 8;
-		myblock[index + size + 2] = (unsigned char) adjusted_magic;
-		myblock[index + size + 3] = (unsigned char) remaining_size;
+//		update_magic(index, adjusted_magic - prev_magic, 1);
+//		myblock[index + size + 1] = (unsigned char) adjusted_magic;
+//		adjusted_magic = adjusted_magic >> 8;
+//		myblock[index + size + 2] = (unsigned char) adjusted_magic;
+		myblock[index + size + 1] = (unsigned char) remaining_size;
 		remaining_size = remaining_size >> 8;
-		myblock[index + size + 4] = (unsigned char) remaining_size;
-		myblock[index + size + 5] = 'f';
+		myblock[index + size + 2] = (unsigned char) remaining_size;
+		myblock[index + size + 3] = 'f';
 	} 
 }
 
 void coalesce(char * ptr, size_t curr_size, size_t next_size) {
-	size_t new_size = curr_size + next_size + 5;
+	size_t new_size = curr_size + next_size + 3;
 	*(ptr - 3) = (unsigned char) new_size;
 	new_size = new_size >> 8;
 	*(ptr - 2) = (unsigned char) new_size;
 }
 
 void * init (size_t size, char * file, size_t line) {
-	if (size > 4091) {
+	if (size > 4093) {
 		fprintf(stderr, "Error in file \"%s\" at line #%lu.\nNot enough memory. Please try again with a smaller size.\n", file, (unsigned long int) line);
 		return NULL;
 	} 
@@ -58,39 +58,39 @@ void * init (size_t size, char * file, size_t line) {
 	size_t size2 = size >> 8;
 	myblock[3] = (unsigned char) size2;
 	myblock[4] = 't';
-	split(4, size, 4091, 34927); //pass in index of in_use
+	split(4, size, 4091); //pass in index of in_use
 	return (void *) (myblock + 5);
 }
 
-void * create(int index, size_t size, size_t available, size_t magic) {
+void * create(int index, size_t size, size_t available) {
 	myblock[index - 1] = 't';
-	if (available - size >= 5) {
+	if (available - size >= 3) {
 		myblock[index - 3] = (unsigned char) size;
 		size_t size2 = size >> 8;
 		myblock[index - 2] = (unsigned char) size2;
-		split(index - 1, size, available, magic);
+		split(index - 1, size, available);
 	}
 	return (void *) (myblock + i);
 		
 }
 
 void * mymalloc (size_t size, char * file, size_t line) {
-	if (calc(myblock[0], myblock[1]) != 34927) {
+	if (calc((unsigned char) myblock[0], (unsigned char) myblock[1]) != 34927) {
 		return init(size, file, line);
 	}
 	int i = 5;
 	size_t calc_size = calc((unsigned char) myblock[2], (unsigned char) myblock[3]);
-	size_t magic_num = calc((unsigned char) myblock[0], (unsigned char) myblock[1]);
-	for (i = 5; i < 4096; i += calc_size + 5) {
+//	size_t magic_num = calc((unsigned char) myblock[0], (unsigned char) myblock[1]);
+	for (i = 5; i < 4096; i += calc_size + 3) {
 		if (calc_size >= size && myblock[i - 1] == 'f') {
-			return create(i, size, calc_size, magic_num);
+			return create(i, size, calc_size);
 		}
-		int next_size = calc((unsigned char) myblock[i + calc_size + 2], (unsigned char) myblock[i + calc_size + 3]);
-		if (myblock[i - 1] == 'f' && myblock[i + calc_size + 4] == 'f' && calc_size + next_size + 5 >= size) {
+		int next_size = calc((unsigned char) myblock[i + calc_size], (unsigned char) myblock[i + calc_size + 1]);
+		if (myblock[i - 1] == 'f' && myblock[i + calc_size + 2] == 'f' && calc_size + next_size + 3 >= size) {
 			coalesce((char *)(myblock + i), calc_size, next_size);
-			return create(i, size, calc_size, magic_num);
+			return create(i, size, calc_size + next_size + 3);
 		}
-		magic_num = calc((unsigned char) myblock[i + calc_size], (unsigned char) myblock[i + calc_size + 1];
+//		magic_num = calc((unsigned char) myblock[i + calc_size], (unsigned char) myblock[i + calc_size + 1];
 		calc_size = next_size;
 				
 	}
@@ -111,9 +111,9 @@ void free (void * ptr, char * file, size_t line) {
 	} if (*(ptr-1) == 't') {
 		*(ptr-1) == 'f';
 		size_t size = calc((unsigned char) *(ptr-3), (unsigned char) *(ptr-2));
-		if (*(ptr + size + 4) == 'f') {
-			size_t next_size = calc((unsigned char) *(ptr + size + 2), (unsigned char) *(ptr + size + 3));
-			coalesce((char *)ptr, size, next_size;
+		if (*(ptr + size + 2) == 'f') {
+			size_t next_size = calc((unsigned char) *(ptr + size), (unsigned char) *(ptr + size + 1));
+			coalesce((char *)ptr, size, next_size);
 		}
 	}
 }
