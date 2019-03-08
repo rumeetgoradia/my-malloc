@@ -8,13 +8,13 @@ size_t calc (unsigned char first, unsigned char second) {
 	return (second << 8) + first;	 
 }
 
-void update (int index, size_t difference, int factor) {
+void update_magic (int index, size_t difference) {
 	size_t size = calc(myblock[index-2], [index-1]);
 	int i = index + calc_size;
 	for (i = index + calc_size; i < 4096; i += calc_size) { 
 		if (myblock[i + 5] == 'f' || myblock[i + 5] == 't') {
 			size_t magic = calc(myblock[i + 1], myblock[i + 2]);
-			magic += (difference * factor);
+			magic += difference;
 			myblock[i + 1] = magic;
 			magic = magic >> 8;
 			myblock[i + 2] = magic;
@@ -37,6 +37,13 @@ void split (int index, size_t size, size_t available, size_t prev_magic) {
 		myblock[index + size + 4] = (unsigned char) remaining_size;
 		myblock[index + size + 5] = 'f';
 	} 
+}
+
+void coalesce(char * ptr, size_t curr_size, size_t next_size) {
+	size_t new_size = curr_size + next_size + 5;
+	*(ptr - 3) = (unsigned char) new_size;
+	new_size = new_size >> 8;
+	*(ptr - 2) = (unsigned char) new_size;
 }
 
 void * init (size_t size, char * file, size_t line) {
@@ -72,21 +79,41 @@ void * mymalloc (size_t size, char * file, size_t line) {
 		return init(size, file, line);
 	}
 	int i = 5;
-	size_t calc_size = calc(myblock[2], myblock[3]);
-	size_t magic_num = calc(myblock[0], myblock[1]);
+	size_t calc_size = calc((unsigned char) myblock[2], (unsigned char) myblock[3]);
+	size_t magic_num = calc((unsigned char) myblock[0], (unsigned char) myblock[1]);
 	for (i = 5; i < 4096; i += calc_size + 5) {
 		if (calc_size >= size && myblock[i - 1] == 'f') {
 			return create(i, size, calc_size, magic_num);
 		}
-		int next_size = calc(myblock[i + calc_size + 2], myblock[i + calc_size + 3]);
-		if (myblock[i - 1] == 'f' && myblock[i + calc_size + 4] == 'f' && calc_size + next_size >= size) {
-			coalesce(i, calc_size, next-size);
+		int next_size = calc((unsigned char) myblock[i + calc_size + 2], (unsigned char) myblock[i + calc_size + 3]);
+		if (myblock[i - 1] == 'f' && myblock[i + calc_size + 4] == 'f' && calc_size + next_size + 5 >= size) {
+			coalesce((char *)(myblock + i), calc_size, next_size);
 			return create(i, size, calc_size, magic_num);
 		}
-		magic_num = calc(myblock[i + calc_size], myblock[i + calc_size + 1];
+		magic_num = calc((unsigned char) myblock[i + calc_size], (unsigned char) myblock[i + calc_size + 1];
 		calc_size = next_size;
 				
 	}
 	fprintf(stderr, "Error in file \"%s\" at line #%lu.\nNot enough memory. Please try again with a smaller size.\n", file, (unsigned long int) line);
 	return NULL;
+}
+
+void free (void * ptr, char * file, size_t line) {
+	if (ptr < myblock || ptr >= myblock + 4096 || ((*(ptr - 1) != 't' && *(ptr - 1) != 'f'))) {
+		fprintf(stderr, "Error in file \"%s\" at line #%lu.\nInvalid use of free(). This pointer was not dynamically allocated through malloc().\n", file, (unsigned long int) line);
+		return;
+	} if (ptr == NULL) {
+		fprintf(stderr, "Error in file \"%s\" at line #%lu.\nInvalid use of free(). This pointer is NULL.\n", file, (unsigned long int) line);
+		return;	
+	} if (*(ptr - 1) == 'f') {
+		fprintf(stderr, "Error in file \"%s\" at line #%lu.\nInvalid use of free(). This pointer was recently freed without being dynamically allocated again.\n", file, (unsigned long int) line);
+		return;
+	} if (*(ptr-1) == 't') {
+		*(ptr-1) == 'f';
+		size_t size = calc((unsigned char) *(ptr-3), (unsigned char) *(ptr-2));
+		if (*(ptr + size + 4) == 'f') {
+			size_t next_size = calc((unsigned char) *(ptr + size + 2), (unsigned char) *(ptr + size + 3));
+			coalesce((char *)ptr, size, next_size;
+		}
+	}
 }
