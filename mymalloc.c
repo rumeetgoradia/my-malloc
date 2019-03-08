@@ -2,7 +2,7 @@
 #include<stdlib.h>
 #include "mymalloc.h"
 
-/*BASE MAGIC NUMBER: 34922*/
+/*BASE MAGIC NUMBER: 34927*/
 
 size_t calc (unsigned char first, unsigned char second) {
 	return (second << 8) + first;	 
@@ -39,7 +39,7 @@ void split (int index, size_t size, size_t available) {
 	} 
 }
 
-void coalesce(char * ptr, size_t curr_size, size_t next_size) {
+void coalesce (char * ptr, size_t curr_size, size_t next_size) {
 	size_t new_size = curr_size + next_size + 3;
 	*(ptr - 3) = (unsigned char) new_size;
 	new_size = new_size >> 8;
@@ -62,7 +62,7 @@ void * init (size_t size, char * file, size_t line) {
 	return (void *) (myblock + 5);
 }
 
-void * create(int index, size_t size, size_t available) {
+void * create (int index, size_t size, size_t available) {
 	myblock[index - 1] = 't';
 	if (available - size >= 3) {
 		myblock[index - 3] = (unsigned char) size;
@@ -98,7 +98,7 @@ void * mymalloc (size_t size, char * file, size_t line) {
 	return NULL;
 }
 
-void free (void * ptr, char * file, size_t line) {
+void myfree (void * ptr, char * file, size_t line) {
 	if (ptr < myblock || ptr >= myblock + 4096 || ((*(ptr - 1) != 't' && *(ptr - 1) != 'f'))) {
 		fprintf(stderr, "Error in file \"%s\" at line #%lu.\nInvalid use of free(). This pointer was not dynamically allocated through malloc().\n", file, (unsigned long int) line);
 		return;
