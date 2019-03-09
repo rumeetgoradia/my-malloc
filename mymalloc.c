@@ -74,6 +74,9 @@ void * create (int index, size_t size, size_t available) {
 }
 
 void * mymalloc (size_t size, char * file, size_t line) {
+	if (size <= 0) {
+		fprintf(stderr, "Error in file \"%s\" at line #%lu.\nInvalid size for dynamic allocation. Please try again.\n", file, (unsigned long int) line);
+	} 
 	if (calc((unsigned char) myblock[0], (unsigned char) myblock[1]) != 34927) {
 		return init(size, file, line);
 	}

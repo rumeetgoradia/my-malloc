@@ -1,17 +1,14 @@
 #include <stdio.h>
-#include "mymalloc.h"
 #include <stdlib.h>
 #include <sys/time.h>
 #include <time.h>
-
-
+#include "mymalloc.h"
 
 void testcaseA()  {
 	int a;
 	for(a=0; a<150; a++) {
 		void* ptr = malloc(1);
 		free(ptr);
-		
 	}
 }
 
