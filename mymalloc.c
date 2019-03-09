@@ -70,8 +70,7 @@ void * create (int index, size_t size, size_t available) {
 		myblock[index - 2] = (unsigned char) size2;
 		split(index - 1, size, available);
 	}
-	return (void *) (myblock + i);
-		
+	return (void *) (myblock + index);	
 }
 
 void * mymalloc (size_t size, char * file, size_t line) {
@@ -98,8 +97,9 @@ void * mymalloc (size_t size, char * file, size_t line) {
 	return NULL;
 }
 
-void myfree (void * ptr, char * file, size_t line) {
-	if (ptr < myblock || ptr >= myblock + 4096 || ((*(ptr - 1) != 't' && *(ptr - 1) != 'f'))) {
+void myfree (void * input, char * file, size_t line) {
+	char * ptr = (char *) input;
+	if (ptr < (char *) myblock || ptr >= (char *) (myblock + 4096) || ((*(ptr - 1) != 't' && *(ptr - 1) != 'f'))) {
 		fprintf(stderr, "Error in file \"%s\" at line #%lu.\nInvalid use of free(). This pointer was not dynamically allocated through malloc().\n", file, (unsigned long int) line);
 		return;
 	} if (ptr == NULL) {
