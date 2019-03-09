@@ -13,7 +13,7 @@ void testcaseA()  {
 		free(ptr);
 		
 	}
-	}
+}
 
 void testcaseB()  {
 	int a;
@@ -25,7 +25,7 @@ void testcaseB()  {
 		free(arr[a]);
 		arr[a]=NULL;
 	}
-	}
+}
 
 void testcaseC() {
 	int a=0;
@@ -67,7 +67,7 @@ void testcaseC() {
 
 int get(int min, int max) {
 	return(random()%(max-min)+min);
-	}
+}
 
 //1 to 64 bytes allocation 
 
