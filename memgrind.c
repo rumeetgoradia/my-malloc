@@ -33,12 +33,12 @@ void testcaseC() {
 	int p;
 	double n;
 	
-	char *arr[150];
-	for(p=0;p<150;p++) {
+	char *arr[50];
+	for(p=0;p<50;p++) {
 		arr[p] = NULL;
 
 		}
-	while (a<150) {
+	while (a<50) {
 		n = (double)rand() / (double)RAND_MAX;
 		if(n<.5) {
 			arr[a] = malloc(1);
@@ -47,7 +47,7 @@ void testcaseC() {
 		}
 		else{
 			int j=0;
-			for(j=0; j<150; j++); {
+			for(j=0; j<50; j++); {
 				if(arr[j]) {
 					free(arr[j]);
 					arr[j]=NULL;	
@@ -58,7 +58,7 @@ void testcaseC() {
 			}
 		}
 	}
-	for(r=0; r<150; r++) {
+	for(r=0; r<50; r++) {
 		free(arr[r]);
 		arr[r]=NULL;
 	}
@@ -78,14 +78,14 @@ void testcaseD() {
 	double n;
 	int mema=0;
 	int num;
-	char *arr[150];
-	int mem[150];
+	char *arr[50];
+	int mem[50];
 
-	for(m=0; m<150; m++) {
+	for(m=0; m<50; m++) {
 		arr[m] = NULL;
 		}
 
-	while(a<150) {
+	while(a<50) {
 		n = (double)random() / (double)RAND_MAX;
 		num=get(1, 64);
 		if (n<.5&&((mema+num)<=5000)){
@@ -97,7 +97,7 @@ void testcaseD() {
 			}	
 		else{
 			int j;
-			for(j=0; j<150; j++) {
+			for(j=0; j<50; j++) {
 				if(arr[j]) {
 					free(arr[j]);
 					arr[j]= NULL;
@@ -110,7 +110,7 @@ void testcaseD() {
 		}
 		}
 		//make sure that anything remaining is also freed
-		for(r=0; r<150; r++) {
+		for(r=0; r<50; r++) {
 			free(arr[r]);
 			arr[r]=NULL;
 		}
@@ -118,8 +118,8 @@ void testcaseD() {
 
 
 int main() {
-	struct timeval start;
-	struct timeval end;
+	struct t1 start;
+	struct t2 end;
 	int a=0;
 	int r=0;
 	int sum;
