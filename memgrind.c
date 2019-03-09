@@ -115,8 +115,8 @@ void testcaseD() {
 
 
 int main() {
-	struct t1 start;
-	struct t2 end;
+	struct timeval start;
+	struct timeval  end;
 	int a=0;
 	int r=0;
 	int sum;
