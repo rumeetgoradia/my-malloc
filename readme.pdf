@@ -2,4 +2,22 @@ Aditi Singh and Rumeet Goradia
 Asst1
 
 
-This program 
+In this program we designed a version of malloc and free that uses an array of 4096 to simulate main memory. In order to successfully complete this program, two methods, mymalloc and myfree, were utilized. Within mymalloc size was passed as a parameter and the first malloc, a free tag, was left with 6 bytes and the remaining 4090 was stored within the myblock array. The data present within the myblock was kept track of through the use of a struct. The fields for this struct were ????? which kept track of whether a block of data was allocated or free and idk what else????? also idk how you used this magic number stuff. The metadata took up 6 byes and at the end of mymalloc a new metadata was made to track how much space was still left. A void poointer to the beginning of the allocated space following the metadata is returned. If a size 0 is passed or in the case where the size is greater than 4090, an error will be returned.
+
+
+In myfree, the pointer to the allocated location is passed as a parameter. The metadata is changed so that a taj is altered from allocated to free so that the metadata is cleared out. We ensured that the pointer is not NULL or has not already been freed. In the case that this does happen, however, an error message is displayed. 
+
+
+There are a number of helper methods that are written throughout the program. The method split splits the size of the data in the case that the char array number is larger than 127 i thinkkkk. The method coalesce i have no idea. 
+ 
+
+
+After testing the workload of each test case the results we found are listed below. Each test was run about 50 times and an average was taken:
+
+
+-WorkLoadA:
+-WorkLoadB:
+-WorkLoadC:
+-WorkLoadD:
+-WorkLoadE:
+-WorkLoadF:
