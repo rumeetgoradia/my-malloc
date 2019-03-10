@@ -6,23 +6,23 @@
 
 void testcaseA()  {
 	int a;
-	for(a = 0; a < 150; a++) {
+	for(a = 0; a < 150; ++a) {
 		void* ptr = malloc(1);
-//		printf("malloced\n");
 		free(ptr);
-//		printf("freed\n");
 	}
 }
 
 void testcaseB()  {
-	int a;
-	char* arr[150];
-	for (a=0; a<150; a++) {
-		arr[a]=malloc(1);
-	}
-	for(a=0;a<150;a++) {
-		free(arr[a]);
-		arr[a]=NULL;
+	int i = 0;
+	int j = 0;
+	char* arr[50];
+	for (i = 0; i < 3; ++i) {
+		for (j = 0; j < 50; j++) {
+			arr[j] = malloc(1);
+		}
+		for (j = 0; j < 50; j++) {
+			free(arr[j]);
+		}
 	}
 }
 
@@ -68,14 +68,6 @@ void testcaseC() {
 	}
 }
 	
-
-int get(int min, int max) {
-	srand(time(0));
-	return(random()%(max-min)+min);
-}
-
-//1 to 64 bytes allocation 
-
 void testcaseD() {
 	int a = 0;
 	int r = 0;
