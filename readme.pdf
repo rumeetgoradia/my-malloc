@@ -1,23 +1,59 @@
-Aditi Singh and Rumeet Goradia
+Aditi Singh and Rumeet Goradia (as2811 and rug5)
 Asst1
 
+In this program, we were tasked with designed our own versions of malloc() and free() to simulate dynamic allocation in C.
+Our program uses a header file, mymalloc.h, to replace any calls to malloc() and free() with calls to our versions, which
+are named mymalloc() and myfree() respectively. The header file also includes the declaration of a static unsigned char
+array of size 4096 called myblock, which is used to store all allocations and essentially to simulate a heap. 
 
-In this program we designed a version of malloc and free that uses an array of 4096 to simulate main memory. In order to successfully complete this program, two methods, mymalloc and myfree, were utilized. Within mymalloc size was passed as a parameter and the first malloc, a free tag, was left with 6 bytes and the remaining 4090 was stored within the myblock array. The data present within the myblock was kept track of through the use of a struct. The fields for this struct were ????? which kept track of whether a block of data was allocated or free and idk what else????? also idk how you used this magic number stuff. The metadata took up 6 byes and at the end of mymalloc a new metadata was made to track how much space was still left. A void poointer to the beginning of the allocated space following the metadata is returned. If a size 0 is passed or in the case where the size is greater than 4090, an error will be returned.
+The data in myblock is tracked through various metadata that is stored within the array itself. This metadata is always 3
+bytes long; the first byte stores the smaller byte of the inputted size, the second byte stores the larger byte of the size,
+and the last byte stores a char to specify whether the allocated memory is in use or not. We decided to use individual
+indices within the array to store the metadata instead of using a struct in an effort to minimize the size of the metadata,
+as a struct with the same parameters would use up 4 bytes of memory due to padding. We also stored a magic number in the
+first 2 bytes of the array as a check for whether or not malloc() had been called yet. This magic number was chosen by
+random prior to coding began, and, as it takes up 2 bytes, has an incredibly small chance of being there prior to the first
+call to malloc().
 
+mymalloc() and myfree() each operated in a very efficient way, with a total combined time complexity of O(n), where n is the
+total number of allocated pointers, freed or unfreed. mymalloc() first checks if the magic number is present in myblock, and
+if it is not, the function returns the pointer returned by init(). If it is present, meaning that malloc() had been called 
+previously, the function traverses through the list of allocated pointers, incrementing each time by the size given in the
+first two bits of each pointer's metadata and checking to see if the pointer is free and has a big enough size for the current
+allocation. If it finds that these conditions are met, it returns a pointer returned by create(), and if the function exhausts
+the list of allocated pointers without meeting these conditions, NULL is returned with an error message stating that the
+requested size is too big. create() and init() behave somewhat differently since init() deals with the first allocation of a
+pointer and therefore cannot read any data from the array and must set the magic number in the array; however, both of the 
+functions essentially have the same task, which is setting the current pointer to being not free and adjusting the size of it
+by changing the values in the aforementioned metadata, and subsequently calling the split() function. The split() function 
+creates a new metadata block after the current pointer, labels it free, and decides the value of this block's size bytes using
+the difference between the original size of the current pointer and its new size. It is important to note that create() only
+changes the current pointer's size and calls split() if there is enough space for new metadata so as to be efficienct, to stay
+within the bounds of myblock, and to prevent overriding any metadata located after the current pointer.
 
-In myfree, the pointer to the allocated location is passed as a parameter. The metadata is changed so that a taj is altered from allocated to free so that the metadata is cleared out. We ensured that the pointer is not NULL or has not already been freed. In the case that this does happen, however, an error message is displayed. 
+myfree() starts with many tests to ensure that the pointer passed to it is valid, meaning it is not NULL, it is a legitimate
+pointer, and it was allocated using malloc(). The functionality of this function is very simple; it simply changes the value of
+the in-use byte of the pointer's metadata to false. It also tests whether the following pointer is free, and if it is, these
+free chunks in myblock are coalesced through coalesce(). An important note here is that in myfree(), only the pointer after
+the current pointer is tested for being free or not -- the previous pointer is not. Given our implementation of the metadata,
+there is no simple AND efficient way to find the location of the previous pointer in myfree(). We could have used a for loop
+to traverse through the list and find any adjacent free pointers to coalesce, but this would not be efficient. Instead, we
+chose to coalesce the previous pointer with the current pointer on a need basis rather than automatically doing it. In 
+mymalloc(), we test if the size of the next pointer added to the size of the current pointer added to the size of the metadata
+would be enough to contain the size requested by the user. If this condition is satisfied, then coalesce() is called in this
+location. There is a guarantee that there will never be more than two adjacent free pointers because the program will always
+coalesce the current pointer and the next pointer if possible by the end of myfree(). coalesce() simply changes the current
+pointer's size to the sum of the size of metadata, the size of the current pointer, and the size of the next pointer.
 
+All error messages are descriptive and include a line number and file name, which are automatically passed into mymalloc() and
+myfree().  
 
-There are a number of helper methods that are written throughout the program. The method split splits the size of the data in the case that the char array number is larger than 127 i thinkkkk. The method coalesce i have no idea. 
- 
+After testing the workload of each test case the results we found are listed below. Each test was run about 50 times and an
+average was taken:
 
-
-After testing the workload of each test case the results we found are listed below. Each test was run about 50 times and an average was taken:
-
-
--WorkLoadA:
--WorkLoadB:
--WorkLoadC:
--WorkLoadD:
--WorkLoadE:
--WorkLoadF:
+- WorkLoadA:
+- WorkLoadB:
+- WorkLoadC:
+- WorkLoadD:
+- WorkLoadE:
+- WorkLoadF:

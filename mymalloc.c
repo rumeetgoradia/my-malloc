@@ -61,7 +61,7 @@ void * init (size_t size, char * file, size_t line) {
 	myblock[3] = (unsigned char) size2;
 	myblock[4] = 't';
 //	printf("first two size bytes: %X %X\n", myblock[2], myblock[3]);
-	split(4, size, 4093); //pass in index of in_use
+	split(4, size, 4091); //pass in index of in_use
 	return (void *) (myblock + 5);
 }
 
