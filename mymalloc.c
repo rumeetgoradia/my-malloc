@@ -108,7 +108,7 @@ void * mymalloc (size_t size, char * file, size_t line) {
 		calc_size = next_size;			
 	}
 	if (any_free == 1) {
-		fprintf(stderr, "Error in file \"%s\" at line #%lu.\nNot space large enough to contain this pointer. Please try again with a smaller size.\n", file, (unsigned long int) line);
+		fprintf(stderr, "Error in file \"%s\" at line #%lu.\nNo space large enough to contain this pointer. Please try again with a smaller size.\n", file, (unsigned long int) line);
 	} else {
 		fprintf(stderr, "Error in file \"%s\" at line #%lu.\nNo free space. Free some pointers to create space for this allocation.\n", file, (unsigned long int) line);
 	}

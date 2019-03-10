@@ -130,7 +130,7 @@ void testcaseE() {
 	while ((ptrs[mind] = malloc(50)) != NULL) {
 		block++;
 		mind++;
-		}
+	}
 	
 	for(find=0; find<mind; find= find+2) {
 		free(ptrs[find]);
@@ -144,6 +144,25 @@ void testcaseE() {
 
 }
 
+void testcaseF() {
+	int size = 1;
+	char *ptrA, *ptrB;
+	int i = 0;
+	for (i = 0; i < 1; i++) {
+		for (size = 1; size < 4096/2; size *= 2) {
+			ptrA = malloc(size);
+			ptrB = malloc(size);
+			free(ptrA);
+			free(ptrB);
+		}
+		for (; size > 0; size /= 2) {
+			ptrA = malloc(size);
+			ptrB = malloc(size);
+			free(ptrA);
+			free(ptrB);
+		}
+	}
+}
 
 int main() {
 	struct timeval start;
@@ -152,9 +171,8 @@ int main() {
 	int r = 0;
 	int sum = 0;
 	int result[600];
-	
-//A
 	for(a = 0; a < 100; ++a) { 
+//A
 		sum = 0;
 		gettimeofday(&start, NULL);
 		testcaseA();
@@ -162,8 +180,6 @@ int main() {
 		sum = sum + ((end.tv_sec-start.tv_sec)*1000000 + (end.tv_usec-start.tv_usec));
 		result[r] = sum;
 		++r;
-	
-
 //B	
 		sum = 0;
 		gettimeofday(&start, NULL);
@@ -172,8 +188,6 @@ int main() {
 		sum = sum + ((end.tv_sec-start.tv_sec)*1000000 + (end.tv_usec-start.tv_usec));
 		result[r]=sum;
                 ++r;
-	
-
 //C
 		sum = 0;
                 gettimeofday(&start, NULL);
@@ -188,43 +202,61 @@ int main() {
                 testcaseD();
                 gettimeofday(&end, NULL);
                 sum = sum + ((end.tv_sec-start.tv_sec)*1000000 + (end.tv_usec-start.tv_usec));
-                result[r]= sum;
+                result[r] = sum;
                 ++r;
-
+//E
+		sum = 0;
+		gettimeofday(&start, NULL);
+		testcaseE();
+		gettimeofday(&end, NULL);
+		sum = sum + ((end.tv_sec-start.tv_sec)*1000000 + (end.tv_usec-start.tv_usec));
+		result[r] = sum;
+		++r;
+//F
+		sum = 0;
+		gettimeofday(&start, NULL);
+		testcaseF();
+		gettimeofday(&end, NULL);
+		sum = sum + ((end.tv_sec-start.tv_sec)*1000000 + (end.tv_usec-start.tv_usec));
+		result[r] = sum;
+		++r;
 	}
 	int i = 0;
 	
 	int ra=0;
-	for(i = 0; i < 100; i += 6) { 
+	for(i = 0; i < 600; i += 6) { 
 		ra= ra+result[i];
 	}
+	printf("For Test Case A the average time is %d milliseconds.\n", ra/100);
 	
-	printf("For Test Case A the average time is %d milliseconds\n", ra/100);
-	
-
 	int rb=0;
-        for(i = 1; i < 100; i += 6) {
+        for(i = 1; i < 600; i += 6) {
 		rb= rb+result[i];
 	}
-	printf("For Test Case B the average time is %d milliseconds\n", rb/100);
-
+	printf("For Test Case B the average time is %d milliseconds.\n", rb/100);
 
 	int rc=0;
-	for(i = 2;i < 100; i += 6) {
+	for(i = 2; i < 600; i += 6) {
 		rc= rc+result[i];
 	}
-	printf("For Test Case C the average time is %d milliseconds\n", rc/100);
+	printf("For Test Case C the average time is %d milliseconds.\n", rc/100);
 
 	int rd=0;
-	for(i = 3;i < 100; i += 6) {
+	for(i = 3; i < 600; i += 6) {
 		rd= rd+result[i];
 	}
-	printf("For Test Case D the average time is %d milliseconds\n", rd/100);
+	printf("For Test Case D the average time is %d milliseconds.\n", rd/100);
 	
 	int re=0;
-	for(i = 4; i < 100; i += 6) {
+	for(i = 4; i < 600; i += 6) {
 		re= re+result[i];
 	}
-	printf("For Test Case E the average time is %d milliseconds\n", re/100);
+	printf("For Test Case E the average time is %d milliseconds.\n", re/100);
+	
+	int rf=0;
+	for (i = 5; i < 600; i += 6) {
+		rf = rf+result[i];
+	}
+	printf("For Test Case F the average time is %d milliseconds.\n", rf/100);
 	return EXIT_SUCCESS;
 }
