@@ -85,7 +85,7 @@ void testcaseD() {
 		n = (int)rand() % 2;
 		size = ((int)rand() % 64) + 1;
 //		printf("size: %d\n", size);
-		if (n == 0 && ((mema + size + 3) <= 4093)){
+		if (n == 0 && ((mema + size + 3) <= 4091)){
 			int i = 0;
 			for (i = 0; i <= a; ++i) {
 				if (!arr[i]) {
@@ -96,7 +96,7 @@ void testcaseD() {
 					break;
 				}
 			}	
-		} else if (n == 1 || (mema + size + 3 > 4093 && a < 50)) {
+		} else if (n == 1 || (mema + size + 3 > 4091 && a < 50)) {
 			if (a != 0) {
 				int j = 0;
 				for(j = 0; j < 50; ++j) {
