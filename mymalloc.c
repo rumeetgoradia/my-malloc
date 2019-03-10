@@ -27,6 +27,7 @@ void update_magic (int index, size_t difference) {
 void split (int index, size_t size, size_t available) {
 //	size_t adjusted_magic = prev_magic + 5 + size;
 	size_t remaining_size = available - (3 + size);
+//	printf("SPLIT: %lu\n", remaining_size);
 	if (index + size < 4091) {
 //		update_magic(index, adjusted_magic - prev_magic, 1);
 //		myblock[index + size + 1] = (unsigned char) adjusted_magic;
@@ -51,6 +52,7 @@ void * init (size_t size, char * file, size_t line) {
 		fprintf(stderr, "Error in file \"%s\" at line #%lu.\nNot enough memory. Please try again with a smaller size.\n", file, (unsigned long int) line);
 		return NULL;
 	} 
+//	printf("SIZE: %lu\n", size);
 	myblock[0] = (unsigned char) 34927;
 	size_t magic2 = 34927 >> 8;
 	myblock[1] = (unsigned char) magic2;
@@ -58,7 +60,8 @@ void * init (size_t size, char * file, size_t line) {
 	size_t size2 = size >> 8;
 	myblock[3] = (unsigned char) size2;
 	myblock[4] = 't';
-	split(4, size, 4091); //pass in index of in_use
+//	printf("first two size bytes: %X %X\n", myblock[2], myblock[3]);
+	split(4, size, 4093); //pass in index of in_use
 	return (void *) (myblock + 5);
 }
 
@@ -81,42 +84,51 @@ void * mymalloc (size_t size, char * file, size_t line) {
 		return init(size, file, line);
 	}
 	int i = 5;
+//	printf("first two size bytes: %X %X\n", myblock[2], myblock[3]);
 	size_t calc_size = calc((unsigned char) myblock[2], (unsigned char) myblock[3]);
+	size_t old_size = calc_size;
+//	printf("SIZE 0: %lu\n", calc_size);
 //	size_t magic_num = calc((unsigned char) myblock[0], (unsigned char) myblock[1]);
-	for (i = 5; i < 4096; i += calc_size + 3) {
+	for (i = 5; i < 4096; i += old_size + 3) {
+		old_size = calc_size;
+//		printf("flag: %c\n", myblock[i - 1]);
 		if (calc_size >= size && myblock[i - 1] == 'f') {
 			return create(i, size, calc_size);
 		}
+//		printf("got past first if\n");
 		int next_size = calc((unsigned char) myblock[i + calc_size], (unsigned char) myblock[i + calc_size + 1]);
+//		printf("got past next_size\n");
 		if (myblock[i - 1] == 'f' && myblock[i + calc_size + 2] == 'f' && calc_size + next_size + 3 >= size) {
 			coalesce((char *)(myblock + i), calc_size, next_size);
 			return create(i, size, calc_size + next_size + 3);
 		}
+//		printf("got past potential coalesce\n");
 //		magic_num = calc((unsigned char) myblock[i + calc_size], (unsigned char) myblock[i + calc_size + 1];
-		calc_size = next_size;
-				
+		calc_size = next_size;			
+//		printf("SIZE %d: %lu\n", i, calc_size);
 	}
 	fprintf(stderr, "Error in file \"%s\" at line #%lu.\nNot enough memory. Please try again with a smaller size.\n", file, (unsigned long int) line);
 	return NULL;
 }
 
-void myfree (void * input, char * file, size_t line) {
-	char * ptr = (char *) input;
-	if (ptr < (char *) myblock || ptr >= (char *) (myblock + 4096) || ((*(ptr - 1) != 't' && *(ptr - 1) != 'f'))) {
+void myfree (void * ptr, char * file, size_t line) {
+//	printf("ptr: %x\n", (char *) ptr);
+	if ((char* )ptr < (char *) myblock || (char *) ptr >= (char *) (myblock + 4096) || ((*((char *)(ptr - 1)) != 't' && *((char*)(ptr - 1)) != 'f'))) {
 		fprintf(stderr, "Error in file \"%s\" at line #%lu.\nInvalid use of free(). This pointer was not dynamically allocated through malloc().\n", file, (unsigned long int) line);
 		return;
-	} if (ptr == NULL) {
+	} if ((char *) ptr == NULL) {
 		fprintf(stderr, "Error in file \"%s\" at line #%lu.\nInvalid use of free(). This pointer is NULL.\n", file, (unsigned long int) line);
 		return;	
-	} if (*(ptr - 1) == 'f') {
+	} if (*((char *) ptr - 1) == 'f') {
 		fprintf(stderr, "Error in file \"%s\" at line #%lu.\nInvalid use of free(). This pointer was recently freed without being dynamically allocated again.\n", file, (unsigned long int) line);
 		return;
-	} if (*(ptr-1) == 't') {
-		*(ptr-1) == 'f';
-		size_t size = calc((unsigned char) *(ptr-3), (unsigned char) *(ptr-2));
-		if (*(ptr + size + 2) == 'f') {
-			size_t next_size = calc((unsigned char) *(ptr + size), (unsigned char) *(ptr + size + 1));
+	} if (*((char *)(ptr-1)) == 't') {
+		*((char *) (ptr-1)) = 'f';
+		size_t size = calc((unsigned char) *((char *)(ptr-3)), (unsigned char) *((char *)(ptr-2)));
+		if (*((char *)(ptr + size + 2)) == 'f') {
+			size_t next_size = calc((unsigned char) *((char *)(ptr + size)), (unsigned char) *((char *)(ptr + size + 1)));
 			coalesce((char *)ptr, size, next_size);
 		}
+//		printf("setting add %x to NULL\n", (char *) ptr);
 	}
 }
