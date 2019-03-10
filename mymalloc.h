@@ -7,9 +7,3 @@ void* mymalloc(size_t size, char* file, size_t line);
 void myfree(void* input, char* file, size_t line);
 
 static unsigned char myblock[4096];
-
-/*typedef struct metadata {
-*	size_t in_use;
-*	size_t size;
-*	struct metadata * next;
-} metadata; */

@@ -4,6 +4,11 @@
 #include <time.h>
 #include "mymalloc.h"
 
+
+
+//this test case mallocs 1 byte and then frees it immediately 
+//this is done 150 times
+
 void testcaseA()  {
 	int a;
 	for(a = 0; a < 150; ++a) {
@@ -12,22 +17,29 @@ void testcaseA()  {
 	}
 }
 
+
+//this test case mallocs 1 byte and stores the pointer within an array
+//this is done 150 times 
+//once 50 byte chunks are malloced then the 50 one byte pointers one by one
 void testcaseB()  {
 	int i = 0;
 	int j = 0;
 	char* arr[50];
 	for (i = 0; i < 3; ++i) {
-		for (j = 0; j < 50; j++) {
+		for (j = 0; j < 50; ++j) {
 			arr[j] = malloc(1);
 		}
-		for (j = 0; j < 50; j++) {
+		for (j = 0; j < 50; ++j) {
 			free(arr[j]);
 		}
 	}
 }
+/*this test case randomly chooses between a 1 byte malloc and a 1 byte pointer (this is done 50 times)
+The variable count keeps track of the amount of times and malloc and free are performed
+*/
 
 void testcaseC() {
-	int a=0;
+	int count=0;
 	int r=0;
 	int p=0;
 	int n=0;
@@ -36,25 +48,26 @@ void testcaseC() {
 	for (p = 0; p < 50; ++p) {
 		arr[p] = NULL;
 	}
-	while (a < 50) {
+	while (count < 50) {
 		n = (int)rand() % 2;
 		if(n == 0) {
 			int i = 0;
-			for (i = 0; i <= a; ++i) {
+			//choose first available index
+			for (i = 0; i <= count; ++i) {
 				if (!arr[i]) {
 					arr[i] = malloc(1);
-					++a;
+					++count;
 					break;
 				}
 			}
 		}
 		else {
 			int j = 0;
-			if (a != 0) {
+			if (count != 0) {
 				for(j=0; j < 50; ++j) {
 					if(arr[j]) {
 						free(arr[j]);
-						--a;
+						--count;
 						arr[j] = NULL;
 						break;
 					}
@@ -68,98 +81,121 @@ void testcaseC() {
 	}
 }
 	
+
+/*this test case chooses between a randomly sized malloc or free pointer that is between 1 and 64 bytes
+ * the amount of memory allocated is kept track through the variable memAll
+ *the amount of times malloc is performed is kept track of through the variable count so that the total doesn't exceed memory capacity and is only done a total of 50 times 
+ *Once malloc is completed all the pointers are freed
+ */
+
 void testcaseD() {
-	int a = 0;
+	int count = 0;
 	int r = 0;
 	int m = 0;
 	int n = 0;
-	int mema = 0;
+	int memAll = 5;
 	int size = 0;
 	char *arr[50];
 	int mem[50];
 	srand(time(0));
 	for(m = 0; m < 50; ++m) {
 		arr[m] = NULL;
+		mem[m] = 0;
 	}
-	while(a < 50) {
+	int last_inserted = n;
+	while(count < 50) {
 		n = (int)rand() % 2;
 		size = ((int)rand() % 64) + 1;
-//		printf("size: %d\n", size);
-		if (n == 0 && ((mema + size + 3) <= 4091)){
+		if (n == 0 && memAll + size < 4091) {
 			int i = 0;
-			for (i = 0; i <= a; ++i) {
+			for (i = 0; i <= count; ++i) {
 				if (!arr[i]) {
 					arr[i] = malloc(size);
-					mem[i] = size + 3;
-					mema += size + 3;
-					++a;
+					mem[i] = size;
+					memAll += size + 3;						
+					++count;
+					last_inserted = i;
 					break;
 				}
 			}	
-		} else if (n == 1 || (mema + size + 3 > 4091 && a < 50)) {
-			if (a != 0) {
-				int j = 0;
-				for(j = 0; j < 50; ++j) {
-					if(arr[j]) {
-						free(arr[j]);
-						arr[j] = NULL;
-						mema -= mem[j];
-						--a;
-						break;
-					}
-				}
+		} else if (n == 1 || (memAll + size >= 4091)) {
+			if (count != 0) {
+				//start freeing from the end
+				free(arr[last_inserted]);
+				arr[last_inserted] = NULL;
+				memAll -= mem[last_inserted] + 3;
+				mem[last_inserted] = 0;
+				--count;
+				--last_inserted;
 			}
 		}
 	}
 		//make sure that anything remaining is also freed
 	for(r = 0; r < 50; ++r) {
-		free(arr[r]);
-		arr[r] = NULL;
+		if (arr[r]) {
+			free(arr[r]);
+		}
 	}
 }
 
+/*this test case first performs malloc until capacity is reached and then it frees every other block and eventually remallocs
+ * the variable find keeps track of the indice of free 
+ * the variable mind keep track of the indice of malloc  
+*/
 
 void testcaseE() {
-//malloc until capacity is reach then free every other block and remalloc
-
-	int block=1;
 	int mind=0;
 	int find=0;
-	int *ptrs[1000];
-
-	while ((ptrs[mind] = malloc(50)) != NULL) {
-		block++;
-		mind++;
+	int *ptrs[75];
+//malloc until capacity is reached
+	for (mind = 0; mind < 75; ++mind) {
+		ptrs[mind] = malloc(50);
 	}
-	
-	for(find=0; find<mind; find= find+2) {
+//free every other block
+	for(find = 0; find < mind; find += 2) {
+		free(ptrs[find]);
+		ptrs[find] = NULL;
+	}
+//remalloc
+	for(mind=0; mind < 75; mind += 2) {
+		ptrs[mind] = malloc(50);
+	}
+	for (find = 0; find < 75; ++find) {
 		free(ptrs[find]);
 		ptrs[find] = NULL;
 	}
 
-	for(mind=0; mind<block-1; find = find+1) {
-		free(ptrs[find]);
-		ptrs[find]= NULL;
-	}
-
 }
+
+/*this test case demonstrates the effectivness of the library's coalescing features
+ * two pointers of the same size are malloced and freed repeatedly at increasing sizes
+ * then the same happens, but with decreasing sizes
+*/ 
 
 void testcaseF() {
 	int size = 1;
 	char *ptrA, *ptrB;
 	int i = 0;
-	for (i = 0; i < 1; i++) {
-		for (size = 1; size < 4096/2; size *= 2) {
+	for (i = 0; i < 3; ++i) {
+		for (size = 1; size < 4091/2; size += 50) {
 			ptrA = malloc(size);
 			ptrB = malloc(size);
-			free(ptrA);
-			free(ptrB);
+			if (ptrA) {
+				free(ptrA);
+			}
+			if (ptrB) {
+				free(ptrB);
+			}
 		}
-		for (; size > 0; size /= 2) {
+		for (; size > 0; size -= 50) {
 			ptrA = malloc(size);
 			ptrB = malloc(size);
-			free(ptrA);
-			free(ptrB);
+			if (ptrA) {
+				free(ptrA);
+			}
+			if (ptrB) {
+				free(ptrB);
+			}
 		}
 	}
 }
@@ -171,7 +207,9 @@ int main() {
 	int r = 0;
 	int sum = 0;
 	int result[600];
-	for(a = 0; a < 100; ++a) { 
+	int i=0;
+	for(a = 0; a < 100; ++a) {
+
 //A
 		sum = 0;
 		gettimeofday(&start, NULL);
@@ -180,6 +218,7 @@ int main() {
 		sum = sum + ((end.tv_sec-start.tv_sec)*1000000 + (end.tv_usec-start.tv_usec));
 		result[r] = sum;
 		++r;
+
 //B	
 		sum = 0;
 		gettimeofday(&start, NULL);
@@ -196,6 +235,7 @@ int main() {
                 sum = sum + ((end.tv_sec-start.tv_sec)*1000000+(end.tv_usec-start.tv_usec));
                 result[r] = sum;
                 ++r;
+
 //D	
 		sum = 0;
                 gettimeofday(&start, NULL);
@@ -204,6 +244,8 @@ int main() {
                 sum = sum + ((end.tv_sec-start.tv_sec)*1000000 + (end.tv_usec-start.tv_usec));
                 result[r] = sum;
                 ++r;
+
+
 //E
 		sum = 0;
 		gettimeofday(&start, NULL);
@@ -212,6 +254,7 @@ int main() {
 		sum = sum + ((end.tv_sec-start.tv_sec)*1000000 + (end.tv_usec-start.tv_usec));
 		result[r] = sum;
 		++r;
+
 //F
 		sum = 0;
 		gettimeofday(&start, NULL);
@@ -221,7 +264,6 @@ int main() {
 		result[r] = sum;
 		++r;
 	}
-	int i = 0;
 	
 	int ra=0;
 	for(i = 0; i < 600; i += 6) { 
@@ -258,5 +300,8 @@ int main() {
 		rf = rf+result[i];
 	}
 	printf("For Test Case F the average time is %d milliseconds.\n", rf/100);
+
 	return EXIT_SUCCESS;
 }
+
+

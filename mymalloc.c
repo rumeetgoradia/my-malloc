@@ -91,6 +91,7 @@ void * mymalloc (size_t size, char * file, size_t line) {
 	int i = 5;
 	size_t calc_size = calc((unsigned char) myblock[2], (unsigned char) myblock[3]);
 	size_t old_size = calc_size;
+	//establish variable to keep error messages specific --> no free space at all, or just no space
 	int any_free = 0;
 	for (i = 5; i < 4096; i += old_size + 3) {
 		old_size = calc_size;
@@ -100,12 +101,30 @@ void * mymalloc (size_t size, char * file, size_t line) {
 		if (calc_size >= size && myblock[i - 1] == 'f') {
 			return create(i, size, calc_size);
 		}
-		int next_size = calc((unsigned char) myblock[i + calc_size], (unsigned char) myblock[i + calc_size + 1]);
-		if (myblock[i - 1] == 'f' && myblock[i + calc_size + 2] == 'f' && calc_size + next_size + 3 >= size) {
-			coalesce((char *)(myblock + i), calc_size, next_size);
-			return create(i, size, calc_size + next_size + 3);
+		if (i + calc_size < 4095) {
+			int next_size = calc((unsigned char) myblock[i + calc_size], (unsigned char) myblock[i + calc_size + 1]);
+			int coalesce_index = i;
+			int sum = calc_size;
+			int coalesce_check = 0;
+			while ((coalesce_index + calc_size + 2 < 4096) && (myblock[coalesce_index - 1] == 'f') && (myblock[coalesce_index + calc_size + 2] == 'f')) {
+			//add the sizes of all subsequent free blocks, not just the first one
+				coalesce_check = 1;
+				sum += next_size + 3;
+				coalesce_index += calc_size + 3;
+				calc_size = calc((unsigned char) myblock[coalesce_index - 3], (unsigned char)myblock[coalesce_index - 2]);
+				if (coalesce_index + calc_size < 4095) {
+					next_size = calc((unsigned char) myblock[coalesce_index + calc_size], (unsigned char) myblock[coalesce_index + calc_size + 1]);
+				}
+			}
+			if (coalesce_check) {
+				coalesce((char *)(myblock + i), old_size, sum);
+				calc_size = calc((unsigned char)myblock[i - 3], (unsigned char)myblock[i - 2]);
+				if (calc_size >= size) {
+					return create(i, size, calc_size);
+				}
+			}
+			calc_size = calc((unsigned char) myblock[i + calc_size], (unsigned char) myblock[i + calc_size + 1]);
 		}
-		calc_size = next_size;			
 	}
 	if (any_free == 1) {
 		fprintf(stderr, "Error in file \"%s\" at line #%lu.\nNo space large enough to contain this pointer. Please try again with a smaller size.\n", file, (unsigned long int) line);
@@ -119,22 +138,24 @@ void * mymalloc (size_t size, char * file, size_t line) {
  *	2. if all tests passed, set pointer's in-use byte to false in its metadata
  *	3. check if possible to coalesce, and do so if yes
  */ 
-void myfree (void * ptr, char * file, size_t line) {
-	if ((char* )ptr < (char *) myblock || (char *) ptr >= (char *) (myblock + 4096) || ((*((char *)(ptr - 1)) != 't' && *((char*)(ptr - 1)) != 'f'))) {
+void myfree (void * input, char * file, size_t line) {
+	char * ptr = (char *) input;
+	if (ptr < (char *) myblock || ptr >= (char *) myblock + 4096 || (*(ptr - 1) != 't' && *(ptr - 1) != 'f')) {
 		fprintf(stderr, "Error in file \"%s\" at line #%lu.\nInvalid use of free(). This pointer was not dynamically allocated through malloc().\n", file, (unsigned long int) line);
 		return;
-	} if ((char *) ptr == NULL) {
+	} if (ptr == NULL) {
 		fprintf(stderr, "Error in file \"%s\" at line #%lu.\nInvalid use of free(). This pointer is NULL.\n", file, (unsigned long int) line);
 		return;	
-	} if (*((char *) ptr - 1) == 'f') {
+	} if (*(ptr - 1) == 'f') {
 		fprintf(stderr, "Error in file \"%s\" at line #%lu.\nInvalid use of free(). This pointer was recently freed without being dynamically allocated again.\n", file, (unsigned long int) line);
 		return;
-	} if (*((char *)(ptr-1)) == 't') {
-		*((char *) (ptr-1)) = 'f';
-		size_t size = calc((unsigned char) *((char *)(ptr-3)), (unsigned char) *((char *)(ptr-2)));
-		if (*((char *)(ptr + size + 2)) == 'f') {
-			size_t next_size = calc((unsigned char) *((char *)(ptr + size)), (unsigned char) *((char *)(ptr + size + 1)));
-			coalesce((char *)ptr, size, next_size);
+	} if (*(ptr-1) == 't') {
+		*(ptr-1) = 'f';
+		size_t size = calc((unsigned char) *(ptr-3), (unsigned char) *(ptr-2));
+		//check if possible to coalesce
+		if ((ptr + size + 2) < (char *)(myblock + 4096) && (ptr + size + 2) > (char *)(myblock) && *(ptr + size + 2) == 'f') {
+			size_t next_size = calc((unsigned char) *(ptr + size), (unsigned char) *(ptr + size + 1));
+			coalesce(ptr, size, next_size);
 		}
 	}
 }
