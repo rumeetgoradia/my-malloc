@@ -17,6 +17,7 @@ void testcaseB()  {
 	char* arr[150];
 	for (a=0; a<150; a++) {
 		arr[a]=malloc(1);
+		arr[a]=NULL;
 	}
 	for(a=0;a<150;a++) {
 		free(arr[a]);
