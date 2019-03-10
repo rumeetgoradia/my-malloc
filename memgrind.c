@@ -119,6 +119,32 @@ void testcaseD() {
 }
 
 
+void testcaseE() {
+//malloc until capacity is reach then free every other block and remalloc
+
+	int block=1;
+	int mind=0;
+	int find=0;
+	int *ptrs[1000];
+
+	while ((ptrs[mind] = malloc(50)) != NULL) {
+		block++;
+		mind++;
+		}
+	
+	for(find=0; find<mind; find= find+2) {
+		free(ptrs[find]);
+		ptrs[find] = NULL;
+	}
+
+	for(mind=0; mind<block-1; find = find+1) {
+		free(ptrs[find]);
+		ptrs[find]= NULL;
+	}
+
+}
+
+
 int main() {
 	struct timeval start;
 	struct timeval end;
@@ -194,5 +220,11 @@ int main() {
 		rd= rd+result[i];
 	}
 	printf("For Test Case D the average time is %d milliseconds\n", rd/100);
+	
+	int re=0;
+	for(i = 4; i < 100; i += 6) {
+		re= re+result[i];
+	}
+	printf("For Test Case E the average time is %d milliseconds\n", re/100);
 	return EXIT_SUCCESS;
 }
