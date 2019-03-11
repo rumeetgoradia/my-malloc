@@ -1,3 +1,8 @@
+/* Aditi Singh and Rumeet Goradia
+ * as2811, rug5
+ * CS214, Section 4
+ */ 
+
 #include<stdio.h>
 #include<stdlib.h>
 #include "mymalloc.h"

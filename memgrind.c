@@ -1,14 +1,15 @@
+/* Aditi Singh and Rumeet Goradia
+ * as2811, rug5
+ * CS214, Section 4
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
 #include <time.h>
 #include "mymalloc.h"
 
-
-
-//this test case mallocs 1 byte and then frees it immediately 
-//this is done 150 times
-
+/* testcaseA() --> malloc() 1 byte and immediately free it, 150 times */
 void testcaseA()  {
 	int a;
 	for(a = 0; a < 150; ++a) {
@@ -17,10 +18,9 @@ void testcaseA()  {
 	}
 }
 
-
-//this test case mallocs 1 byte and stores the pointer within an array
-//this is done 150 times 
-//once 50 byte chunks are malloced then the 50 one byte pointers one by one
+/* testcaseB() --> malloc() 1 byte pointer 50 times in a row, then free() all 50
+ * 	1. repeat entire process 3 times to get a total of 150 malloc() calls and free() calls
+ */ 	
 void testcaseB()  {
 	int i = 0;
 	int j = 0;
@@ -34,21 +34,27 @@ void testcaseB()  {
 		}
 	}
 }
-/*this test case randomly chooses between a 1 byte malloc and a 1 byte pointer (this is done 50 times)
-The variable count keeps track of the amount of times and malloc and free are performed
-*/
 
+
+/* testcaseC() --> randomly malloc() and free() 1 byte pointers
+ * 	1. use random number generator to decide whether to malloc() or free()
+ * 	2. keep repeating until a total of 50 pointers are allocated at the same time
+ * 	3. free all pointers
+ */
 void testcaseC() {
 	int count=0;
 	int r=0;
 	int p=0;
 	int n=0;
+	//seed random number generator
 	srand(time(0));
 	char *arr[50];
 	for (p = 0; p < 50; ++p) {
+		//initialize array
 		arr[p] = NULL;
 	}
 	while (count < 50) {
+		//random number generator
 		n = (int)rand() % 2;
 		if(n == 0) {
 			int i = 0;
@@ -75,19 +81,19 @@ void testcaseC() {
 			}
 		}
 	}
+	//free all
 	for(r=0; r<50; ++r) {
 		free(arr[r]);
 		arr[r]=NULL;
 	}
 }
 	
-
-/*this test case chooses between a randomly sized malloc or free pointer that is between 1 and 64 bytes
- * the amount of memory allocated is kept track through the variable memAll
- *the amount of times malloc is performed is kept track of through the variable count so that the total doesn't exceed memory capacity and is only done a total of 50 times 
- *Once malloc is completed all the pointers are freed
+/* testcaseD() --> randomly malloc() or free() a randomly sized pointer
+ *	1. use same basic setup as testcaseC()
+ *	2. use memAll to keep track of available memory, starting with 4091 since first five bytes are metadata and magic number
+ *	3. for simplicity, always free() last added pointer 
+ *	4. repeat until 50 pointers are allocated at the same time, and then free all of them
  */
-
 void testcaseD() {
 	int count = 0;
 	int r = 0;
@@ -96,6 +102,7 @@ void testcaseD() {
 	int memAll = 5;
 	int size = 0;
 	char *arr[50];
+	//keep track of individual pointer sizes
 	int mem[50];
 	srand(time(0));
 	for(m = 0; m < 50; ++m) {
@@ -130,19 +137,15 @@ void testcaseD() {
 			}
 		}
 	}
-		//make sure that anything remaining is also freed
+	//make sure that anything remaining is also freed
 	for(r = 0; r < 50; ++r) {
-		if (arr[r]) {
-			free(arr[r]);
-		}
+		free(arr[r]);
 	}
 }
 
-/*this test case first performs malloc until capacity is reached and then it frees every other block and eventually remallocs
- * the variable find keeps track of the indice of free 
- * the variable mind keep track of the indice of malloc  
-*/
-
+/* testcaseE() --> allocate pointers until capacity of myblock is full, then free() and reallocate() every other pointer
+ * 	1. 75 50-byte pointers is near max capacity of myblock
+ */
 void testcaseE() {
 	int mind=0;
 	int find=0;
@@ -167,11 +170,10 @@ void testcaseE() {
 
 }
 
-/*this test case demonstrates the effectivness of the library's coalescing features
- * two pointers of the same size are malloced and freed repeatedly at increasing sizes
- * then the same happens, but with decreasing sizes
-*/ 
-
+/* testcaseF() --> demonstrates the effectiveness of the library's coalescing features 
+ * 	1. two pointers of the same size are malloced and freed repeatedly at increasing sizes
+ * 	2. then the same happens, but with decreasing sizes
+ */ 
 void testcaseF() {
 	int size = 1;
 	char *ptrA, *ptrB;
@@ -209,7 +211,7 @@ int main() {
 	int result[600];
 	int i=0;
 	for(a = 0; a < 100; ++a) {
-
+//results for A will be stored in result[0], result[6], result[12], etc.
 //A
 		sum = 0;
 		gettimeofday(&start, NULL);
@@ -218,7 +220,7 @@ int main() {
 		sum = sum + ((end.tv_sec-start.tv_sec)*1000000 + (end.tv_usec-start.tv_usec));
 		result[r] = sum;
 		++r;
-
+//results for B will be stored in result[1], result[7], etc.
 //B	
 		sum = 0;
 		gettimeofday(&start, NULL);
@@ -269,37 +271,37 @@ int main() {
 	for(i = 0; i < 600; i += 6) { 
 		ra= ra+result[i];
 	}
-	printf("For Test Case A the average time is %d milliseconds.\n", ra/100);
+	printf("For Test Case A, the average time is %d milliseconds.\n", ra/100);
 	
 	int rb=0;
         for(i = 1; i < 600; i += 6) {
 		rb= rb+result[i];
 	}
-	printf("For Test Case B the average time is %d milliseconds.\n", rb/100);
+	printf("For Test Case B, the average time is %d milliseconds.\n", rb/100);
 
 	int rc=0;
 	for(i = 2; i < 600; i += 6) {
 		rc= rc+result[i];
 	}
-	printf("For Test Case C the average time is %d milliseconds.\n", rc/100);
+	printf("For Test Case C, the average time is %d milliseconds.\n", rc/100);
 
 	int rd=0;
 	for(i = 3; i < 600; i += 6) {
 		rd= rd+result[i];
 	}
-	printf("For Test Case D the average time is %d milliseconds.\n", rd/100);
+	printf("For Test Case D, the average time is %d milliseconds.\n", rd/100);
 	
 	int re=0;
 	for(i = 4; i < 600; i += 6) {
 		re= re+result[i];
 	}
-	printf("For Test Case E the average time is %d milliseconds.\n", re/100);
+	printf("For Test Case E, the average time is %d milliseconds.\n", re/100);
 	
 	int rf=0;
 	for (i = 5; i < 600; i += 6) {
 		rf = rf+result[i];
 	}
-	printf("For Test Case F the average time is %d milliseconds.\n", rf/100);
+	printf("For Test Case F, the average time is %d milliseconds.\n", rf/100);
 
 	return EXIT_SUCCESS;
 }

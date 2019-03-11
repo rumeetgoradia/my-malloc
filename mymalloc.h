@@ -1,3 +1,8 @@
+/* Aditi Singh and Rumeet Goradia
+ * as2811, rug5
+ * CS214, Section 4
+ */
+
 #include<stdlib.h>
 
 #define malloc( x ) mymalloc ( x, __FILE__, __LINE__ )
