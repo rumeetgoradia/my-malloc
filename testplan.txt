@@ -4,5 +4,9 @@ Assignment 1
 
 Test Cases:
 
+The two test cases that we created were Test Case E and Test Case F. In Test Case E we first malloced until the block reached its capacity. We then freed every other block and eventually went back and remalloced the free blocks.This Test Case helped us demonstrate that myblock was filled completely.
 
+
+
+Within Test Case F we started with the allocation of two pointers malloced to size 1. These two pointers was immediately freed and the malloc size was incremented by 50. This process was repeated until the size hit 4091/2. At this point the same process was repeated, however the malloc size was now decremented by 50. This process was repeated 3 times. This test case as a whole demonstrated the effectiveness of the coalescing method within mymalloc.c.
 	
