@@ -1,12 +1,19 @@
-Rumeet Goradia and Aditi Singh
+Aditi Singh and Rumeet Goradia
+as2811, rug5
+CS214, Section 4
 
 Assignment 1
 
 Test Cases:
 
-The two test cases that we created were Test Case E and Test Case F. In Test Case E we first malloced until the block reached its capacity. We then freed every other block and eventually went back and remalloced the free blocks.This Test Case helped us demonstrate that myblock was filled completely.
+The two test cases that we created were Test Case E and Test Case F. In Test Case E, we first used malloc() until the block reached its capacity. 
+We then freed every other block and then reallocated the free blocks. This test case helped us demonstrate that myblock could be filled completely,
+partially emptied, and then refilled. It also shows how the coalescing features of our program would not work on free blocks that aren't adjacent. 
+Over a 1000 cases, this test-case averaged a run-time of 43.1 milliseconds.
 
-
-
-Within Test Case F we started with the allocation of two pointers malloced to size 1. These two pointers was immediately freed and the malloc size was incremented by 50. This process was repeated until the size hit 4091/2. At this point the same process was repeated, however the malloc size was now decremented by 50. This process was repeated 3 times. This test case as a whole demonstrated the effectiveness of the coalescing method within mymalloc.c.
-	
+Within Test Case F, we started with the allocation of two pointers allocated with a size of 1 byte. These two pointers were immediately freed and
+the size was incremented by 50. This process was repeated as long as the size stayed less than half of the available space in myblock. After this
+process, the same process was repeated in reverse; the sizes started at half of the available space in myblock and were decremented by 50 bytes
+each iteration. The entire process was repeated 3 times. As a whole, this test case was used to showcase the functionality of the coalescing features
+that were created in the library file, mymalloc.c. With our implementation, coalescing happens at an effective rate, which can be seen as the test
+case took, on average, about 21.7 milliseconds (using 1000 cases). 
